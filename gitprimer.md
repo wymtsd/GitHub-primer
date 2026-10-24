@@ -1,110 +1,155 @@
-# Git - Quick Primer
+# Git command reference
 
-A fast-paced introduction to version control and git.
-If you want the full blown experience, see the git scm book: https://git-scm.com/book/en/v2
+Author: [wymtsd](https://github.com/wymtsd).
+Start with the [full tutorial](Readme.adoc) for setup and a complete exercise.
 
-## What is version control
-Version control is maintaining a detailed report of changes that happen to your codebase.
-Good version control practice allows you to roll back mistakes, work on features in parallel, and combine them into a final product.
+Examples use Git 2.23 or later. Replace placeholders before running commands.
+Commands with a file path affect that file; branch operations affect the current
+branch unless stated otherwise.
 
-## How does Git record history?
+## Core concepts
 
-* A Git **repository** stores objects (including commits), references (including branches and tags), and configuration.
-* A **branch** is a movable reference to a commit. Commits form a directed history graph through their parent links, rather than a separate linear history for each branch.
-* A **commit** records a snapshot, metadata, and parent links. Comparing snapshots shows *what changed*; an initial commit has no parent, and a merge commit can have multiple parents.
-* Each **commit** has a unique hash that identifies it among all other commits.
-* Changes are usually introducing or removing lines from a file, deleting a file, or renaming a file.
+- A commit records a snapshot, metadata, and parent links. Diffs compare snapshots.
+- A branch is a movable reference to a commit; history is a graph.
+- HEAD normally refers to the current branch, or directly to a detached commit.
+- The working tree contains checked-out files. The index holds staged content.
+- A GitHub Fork is a separate hosted repository. A branch is a reference within
+  a repository; it is not a GitHub Fork.
+- Clone gets a local copy; commit saves locally; push sends commits to a remote.
+  A pull request proposes integrating changes on GitHub.
 
-## How do I see the history?
-Use `git log <branch> -- <files>` to see a list of commits on `branch` that edited `files` (or any files, if absent).
+## Inspect your work
 
-## The git workflow
+| Goal | Command |
+| --- | --- |
+| Show staged, modified, and untracked files | `git status` |
+| Show unstaged tracked changes | `git diff` |
+| Show staged changes | `git diff --cached` |
+| Show recent history | `git log --oneline --graph --all` |
+| Show commits affecting a file | `git log main -- practice-note.txt` |
+| Show configured remote URLs | `git remote -v` |
+| Show the latest commit | `git log -1 --oneline` |
 
-1. Working set
-   * The *working set* is the state of the files as they are on your machine, right now.
-   * When you make changes with `vi` or `emacs`, you edit the working set, making those files *modified*
-2. Staging area
-   * The *staging area* (also called the index) is for files that you have finished editing and want to commit the next time `git commit` is run
-   * A file can be both *staged* and *modified* if you change it after staging. Simply stage it again to update the staging area.
-3. Committed files
-   * Within `.git` directory, git holds data structures that describe what it currently believes the file should look like
-   * You diverge from this state when editing, but then tell git about the changes by *committing*
-   * `HEAD` is a reference that normally names the current branch. In detached HEAD mode it points directly to a commit. The index may contain staged changes that differ from that commit.
+Untracked file contents do not appear in ordinary `git diff`. Open the file
+directly, then stage it and review `git diff --cached`.
 
-### Moving inside the workflow
+## Stage and commit
 
-| You want to       | Type           |
-| ------------- |:-------------:|
-| Restore selected files in both the index and working tree from a commit; using HEAD discards staged and unstaged changes to those files | `git checkout <commit-hash> -- <files>` |
-| Move the current branch to a commit and reset the index, leaving working files unchanged; changes become unstaged or untracked as appropriate | `git reset <commit-hash>` |
-| Move the current branch to a commit and reset the index and working tree. **Discards tracked uncommitted changes and may overwrite untracked files in the way.** Previous commits may be recoverable through reflog until pruned; uncommitted work usually is not. Back up first. | `git reset --hard <commit-hash>` |
-| Check out a commit in detached HEAD mode to inspect it. Commits are possible, but create a branch to retain work before switching away | `git checkout <commit-hash>` |
-| Switch to an existing branch and update the index and working tree as needed. Local edits may be carried over; Git refuses if they would be overwritten | `git checkout <branch>` |
-| Stage files | `git add <files>` |
-| Unstage selected files without changing working files | `git reset HEAD -- <files>` |
-| Commit staged changes | `git commit -m "Your message"` |
+| Goal | Command |
+| --- | --- |
+| Stage one file's current contents | `git add practice-note.txt` |
+| Unstage it while preserving working files | `git restore --staged -- practice-note.txt` |
+| Commit staged changes | `git commit -m "docs: add first practice note"` |
+| Include tracked modifications and deletions automatically | `git commit -a -m "docs: update practice note"` |
+| Set this repository's public author name | `git config user.name "YOUR-PUBLIC-NAME"` |
+| Set this repository's commit email | `git config user.email "YOUR-GITHUB-COMMIT-EMAIL"` |
 
-### Working with remote servers
-| You want to       | Type           |
-| ------------- |:-------------:|
-| Copy a remote git repo to your computer, creating a remote named `origin` for that URL | `git clone <repo-url>` |
-| Make your local git aware of branches on the server, and their states. Use this to "refresh" a repo (note this does not change your local branches, but simply makes you aware of if yours are outdated or not) | `git fetch <remote-name>` |
-| Fetch and remove stale remote-tracking references for branches deleted on the remote; ordinary local branches are not deleted | `git fetch <remote-name> --prune` |
-| Create a remote branch, or update it when the push is a fast-forward (subject to permissions and branch rules) | `git push <remote-name> <branch-name>` |
-| Fetch the named remote branch and integrate it into your current local branch using the selected merge/rebase strategy | `git pull <remote-name> <branch-name>` (this may cause merge conflicts!) |
-| Delete a remote branch | `git push <remote-name> :<branch-name>` |
+The `-a` flag does not include untracked files. A .gitignore rule does not stop
+tracking files already in Git. Commit identity is public metadata, not sign-in.
 
-### Branching
-| You want to       | Type           |
-| ------------- |:-------------:|
-| Make fork of the commit tree at your current HEAD. This could be any commit, so you could theoretically go back to an old commit and branch off that. | `git checkout -b <new-branch-name>` |
-| Switch to an existing branch | `git checkout <branch-name>` |
-| Delete a branch locally | `git branch -d <branch-name>` |
-| Force-delete a local branch without checking whether it is merged; commits reachable only through it may later be pruned | `git branch -D <branch-name>` |
+## Branches
+
+| Goal | Command |
+| --- | --- |
+| Create and switch to a branch at HEAD | `git switch -c docs/first-note` |
+| Switch to an existing local branch | `git switch main` |
+| Create a local branch tracking a fetched remote branch | `git switch --track origin/docs/first-note` |
 | Show local branches | `git branch` |
 | Show remote-tracking branches | `git branch -r` |
-| Show local and remote-tracking branches | `git branch -a` |
-| Integrate a branch into the current branch; this may fast-forward or create a merge commit | `git merge <branch-name>` |
+| Show both | `git branch -a` |
+| Delete a local branch with Git's merge-safety check | `git branch -d docs/first-note` |
+| Inspect an old commit without moving a branch | `git switch --detach COMMIT` |
+| Keep work made at a detached commit | `git switch -c keep-work` |
 
-### Working with others
-Note: you probably don't need this for CS439
+Switching can carry compatible local edits, but Git refuses when they would be
+overwritten. Commit or stash before a switch if unsure. A branch may not pass
+the deletion check after a squash/rebase merge; inspect before forcing deletion.
 
-Say we are on branch `master`. Alice makes some changes to `foo.txt`, and commits it. Bob makes some changes to the file and commits as well. 
-One of them will push first, then the other will then have to pull then push.
+## Remotes and collaboration
 
-There are two scenarios:
-* Alice and Bob edited completely separate parts of the file.
-    - Recall that commits are simply recordings of what's *changed* (diffs). For independent text edits, a merge will usually succeed automatically. A subsequent push may still fail if someone else pushes first.
-* Alice and Bob edited the same region
-    - When the pull uses a merge and the text edits cannot be combined automatically, Git stops in a **merge conflict state**. The affected text file normally gains markers to show the conflict. Rebase has a different continuation step.
+| Goal | Command |
+| --- | --- |
+| Clone your practice repository | `git clone https://github.com/YOUR-USERNAME/git-practice.git` |
+| Discover remote commits without integrating them | `git fetch origin` |
+| Also remove stale remote-tracking references | `git fetch --prune origin` |
+| First push, setting the feature branch's upstream | `git push -u origin docs/first-note` |
+| Push the current branch once its upstream is configured | `git push` |
+| Fetch main and integrate it into the current branch only if fast-forward is possible | `git pull --ff-only origin main` |
+| Integrate a fetched feature branch into the current branch | `git merge docs/first-note` |
+| Delete a remote feature branch after checking it is no longer needed | `git push origin --delete docs/first-note` |
 
+Fetch does not update ordinary local branches. Prune does not delete them.
+Pull updates the **current branch**, so switch to main first if that is the
+branch you intend to update. A plain pull may merge or rebase depending on
+configuration and options; no extra checkout of HEAD is needed.
+
+Before merging a feature branch, switch to the intended base and check
+`git status`. A merge may fast-forward or create a merge commit.
+Pushes require authentication, write access, and compliance with branch rules.
+See [sign-in setup](Readme.adoc#authentication) and
+[the Fork workflow](Readme.adoc#fork-workflow) if you do not have write access.
+
+## Conflicts and unfinished work
+
+When a merge stops on a conflict:
+
+1. Run `git status` and inspect the affected files.
+2. Resolve the content and remove conflict markers.
+3. Stage each resolved file, such as `git add practice-note.txt`.
+4. Run `git merge --continue`, or `git merge --abort` to abandon the merge.
+
+During a rebase, use `git rebase --continue` or `git rebase --abort` instead.
+Overlapping edits may conflict, but a conflict is not inevitable.
+
+To move unfinished work to a different existing branch:
+
+```bash
+git stash push -u -m "unfinished practice note"
+git switch existing-branch
+git stash pop
 ```
-This is sentence 1.
-This is sentence 2.
-<<<<<<< HEAD
-This is the awesome and stupendous sentence 3.
-=======
-This is the amazing and glorious sentence 3.
->>>>>>> <remote>/<branch>
-This is sentence 4.
-```
 
-If you are the person who has not pushed, you will need to look **carefully** at what is different. Your version is bounded by `<<<<<<< HEAD` and `=======`, their version is bounded by `=======` and `>>>>>>> <remote>/<branch>`. Do **not** just delete one side or the other blindly, you are erasing someone's changes!
+Replace existing-branch with a branch that exists. The -u flag includes
+untracked files, not ignored files. Applying a stash can conflict; if pop
+fails, its stash entry remains available.
 
-You must consider, *semantically*, what the other person has changed, then incorporate both of your changes together into one copy. A resolved version of the above example would be as follows:
+## Restore and undo: read before running
 
-```
-This is sentence 1.
-This is sentence 2.
-This is the awesome, stupendous, amazing and glorious sentence 3.
-This is sentence 4.
-```
+| Goal | Command and consequence |
+| --- | --- |
+| Discard unstaged edits to one tracked file | `git restore -- practice-note.txt` restores from the index; staged content remains |
+| Restore both staged and working versions of a file from HEAD | `git restore --source=HEAD --staged --worktree -- practice-note.txt` discards both sets of edits to that file |
+| Restore a file's working version from an older commit | `git restore --source=COMMIT -- practice-note.txt` changes the working file, not HEAD or the index |
+| Reverse an ordinary published commit with a new commit | `git revert COMMIT` can conflict; merge commits need additional choices |
+| Move the current branch and index to an earlier commit, retaining working files | `git reset COMMIT` unstages changes; some files may become untracked |
+| Move the branch, index, and working tree to an earlier commit | `git reset --hard COMMIT` discards tracked uncommitted changes and may overwrite untracked files in the way |
+| Force-delete an unchecked local branch | `git branch -D BRANCH` removes its reference without verifying it is merged |
 
-For a merge, stage each resolved file with `git add <file>`, then run `git merge --continue` (or `git commit`) and push. To abandon the merge, use `git merge --abort`. If you chose rebase instead, stage the resolution and use `git rebase --continue`.
+Back up work before destructive commands. Old commits may be recoverable
+through reflog until pruned; uncommitted edits generally are not. Prefer revert
+for ordinary commits already shared with others. Do not force push as a routine
+response to a rejected push.
 
-## Command references
+## Older checkout equivalents
 
+Use switch and restore above to keep branch switching separate from restoring
+files. Older tutorials may use:
+
+| Older command | Meaning |
+| --- | --- |
+| `git checkout -b BRANCH` | Create and switch to a branch |
+| `git checkout BRANCH` | Switch to an existing branch |
+| `git checkout COMMIT` | Inspect a commit with detached HEAD |
+| `git checkout COMMIT -- FILE` | Replace both the index and working file from a commit |
+
+## Official references
+
+- [Pro Git](https://git-scm.com/book/en/v2)
+- [git switch](https://git-scm.com/docs/git-switch)
+- [git restore](https://git-scm.com/docs/git-restore)
 - [git fetch](https://git-scm.com/docs/git-fetch)
+- [git pull](https://git-scm.com/docs/git-pull)
 - [git reset](https://git-scm.com/docs/git-reset)
-- [git checkout](https://git-scm.com/docs/git-checkout)
+- [git revert](https://git-scm.com/docs/git-revert)
 - [git merge](https://git-scm.com/docs/git-merge)
+
