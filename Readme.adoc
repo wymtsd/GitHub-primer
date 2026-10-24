@@ -367,24 +367,6 @@ conflict; Git retains the stash entry if `pop` fails.
 |You checked out a commit instead of a branch. Use `git switch -c keep-work` to retain any work before leaving that position.
 |===
 
-[[screenshots]]
-== Historical GitHub interface examples
-
-These screenshots illustrate older GitHub screens. Their names, repositories,
-and course context are historical examples, not author identity or instructions
-to use those repositories. Follow the written practice above for commands and
-current repository names. GitHub's interface may differ.
-
-image::images/00-Clone.png[Historical repository clone URL menu]
-image::images/01-Issues.png[Historical GitHub issue list]
-image::images/02-NewIssue.png[Historical new issue form]
-image::images/03-AssignIssue.png[Historical issue assignee menu]
-image::images/04-CreateBranch.png[Historical branch creation interface]
-image::images/05-PullRequests.png[Historical pull request list]
-image::images/06-Comparing.png[Historical branch comparison screen]
-image::images/07-PullRequest2.png[Historical pull request review screen]
-image::images/08-Merged.png[Historical merged pull request and branch deletion controls]
-
 == Documentation checks
 
 GitHub Actions checks this guide and link:gitprimer.md[the command reference]
