@@ -1,10 +1,9 @@
 = Git & GitHub Primer
-wymtsd
 :toc:
 :toclevels: 2
 
 Learn Git through one small change: create a branch, edit one file, commit,
-push, and open a pull request. Author: https://github.com/wymtsd[wymtsd].
+push, and open a pull request.
 
 == Choose your starting point
 
