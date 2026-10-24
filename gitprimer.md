@@ -1,6 +1,6 @@
 # Git command reference
 
-Start with the [full tutorial](Readme.adoc) for setup and a complete exercise.
+Start with the [full tutorial](README.md) for setup and a complete exercise.
 
 Examples use Git 2.23 or later. Replace placeholders before running commands.
 Commands with a file path affect that file; branch operations affect the current
@@ -85,8 +85,8 @@ configuration and options; no extra checkout of HEAD is needed.
 Before merging a feature branch, switch to the intended base and check
 `git status`. A merge may fast-forward or create a merge commit.
 Pushes require authentication, write access, and compliance with branch rules.
-See [sign-in setup](Readme.adoc#authentication) and
-[the Fork workflow](Readme.adoc#fork-workflow) if you do not have write access.
+See [sign-in setup](README.md#authentication) and
+[the Fork workflow](README.md#fork-workflow) if you do not have write access.
 
 ## Conflicts and unfinished work
 

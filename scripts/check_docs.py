@@ -10,7 +10,7 @@ from urllib.parse import unquote, urldefrag, urlsplit
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCS = ("Readme.adoc", "gitprimer.md")
+DOCS = ("README.md", "gitprimer.md")
 # This settings page requires a signed-in user; do not send credentials from CI.
 EXCLUDED_EXTERNAL = {"https://github.com/settings/emails"}
 errors = []
@@ -21,32 +21,32 @@ def fail(message):
     errors.append(message)
 
 
-def prose(text, suffix):
-    """Skip fenced code and AsciiDoc literal/source blocks when finding links."""
+def prose(text, suffix=".md"):
+    """Skip Markdown fenced code blocks when finding links."""
     result = []
-    inside = False
-    delimiter = "----" if suffix == ".adoc" else "~~~unused"
+    fence = None
     for line in text.splitlines():
-        if suffix == ".md" and line.startswith("```"):
-            inside = not inside
-            continue
-        if suffix == ".adoc" and line == delimiter:
-            inside = not inside
-            continue
-        if not inside:
+        match = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line)
+        if match:
+            marker = match.group(1)
+            if fence is None:
+                fence = marker
+                continue
+            if marker[0] == fence[0] and len(marker) >= len(fence) and not match.group(2).strip():
+                fence = None
+                continue
+        if fence is None:
             result.append(line)
-    if inside:
-        fail("Unclosed source/code block")
+    if fence is not None:
+        fail("Unclosed Markdown code block")
     return "\n".join(result)
 
 
 def anchors(path):
     text = path.read_text(encoding="utf-8")
-    if path.suffix == ".adoc":
-        return set(re.findall(r"^\[\[([^\],]+)\]\]$", text, re.M))
     # GitHub-style IDs for the simple headings used in this repository.
-    found = set()
-    for heading in re.findall(r"^#{1,6} (.+)$", text, re.M):
+    found = set(re.findall(r'<a\s+(?:name|id)="([^"]+)"\s*></a>', text))
+    for heading in re.findall(r"^#{1,6} (.+)$", prose(text, ".md"), re.M):
         heading = re.sub(r"[^\w\- ]", "", heading.lower()).replace(" ", "-")
         found.add(heading)
     return found
@@ -77,24 +77,15 @@ for filename in DOCS:
         if "\t" in line:
             fail(f"{filename}:{number}: use spaces instead of tabs")
     clean = prose(text, path.suffix)
-    if path.suffix == ".md":
-        targets = re.findall(r"!?\[[^\]]*\]\(([^)\s]+)\)", clean)
-        for line in clean.splitlines():
-            if line.startswith("|") and not line.endswith("|"):
-                fail(f"{filename}: table row must end with |")
-    else:
-        if text.splitlines().count("|===") % 2:
-            fail(f"{filename}: unclosed AsciiDoc table")
-        targets = re.findall(r"(?:link:)?((?:https?://|[A-Za-z0-9_./-]+)[^\s\[]*)\[[^\]]*\]", clean)
-        for target, alt in re.findall(r"image::([^\[]+)\[([^\]]*)\]", clean):
-            check_target(path, target)
-            if not alt.strip():
-                fail(f"{filename}: image has no alternative text: {target}")
-        for target in re.findall(r"<<([^,>]+)(?:,[^>]+)?>>", clean):
-            check_target(path, "#" + target)
+    targets = re.findall(r"!?\[[^\]]*\]\(([^)\s]+)\)", clean)
     for target in targets:
-        if not target.startswith("image::"):
-            check_target(path, target)
+        check_target(path, target)
+    for alt, target in re.findall(r"!\[([^\]]*)\]\(([^)\s]+)\)", clean):
+        if not alt.strip():
+            fail(f"{filename}: image has no alternative text: {target}")
+    for line in clean.splitlines():
+        if line.startswith("|") and not line.endswith("|"):
+            fail(f"{filename}: table row must end with |")
 
 
 def check_http(url):
