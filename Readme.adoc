@@ -1,441 +1,417 @@
 = Git & GitHub Primer
-Karl Asenstorfer
-v1.0
-:toc: auto
+wymtsd
+:toc:
+:toclevels: 2
 
-Learn the Git basics and follow a practical GitHub collaboration workflow:
-clone a repository, make changes on a branch, commit, push, and open a pull request.
-
-== Who this guide is for
-
-* New Git and GitHub users who want to understand the commands they run.
-* Contributors preparing to make their first pull request.
-* Readers who already know the basics and need a command reference.
-
-This is an introductory guide. Advanced history rewriting, deployment, and
-GitHub Actions are outside its current scope.
+Learn Git through one small change: create a branch, edit one file, commit,
+push, and open a pull request. Author: https://github.com/wymtsd[wymtsd].
 
 == Choose your starting point
 
-[cols="1,2,2",options="header"]
+[cols="1,2",options="header"]
 |===
-|Your goal |Start here |What you will find
-
-|Learn Git for the first time
-|<<git-basics,Full tutorial: Git basics>>
-|The core concepts, followed by setup, staging, commits, and remote updates.
-
-|Make a change and collaborate
-|<<github-workflow,GitHub workflow>>
-|Issues, branches, pull requests, review, and merging. Read the setup section first if Git is new to you.
-
-|Look up a command
-|link:gitprimer.md[Quick primer and command reference]
-|Compact explanations and command tables for everyday Git operations.
-
-|Understand branches or fix a conflict
-|<<branches-merging,Branches and merging>>
-|How branch histories fit together and how to finish or abort a conflicted merge.
+|Your goal |Start here
+|Learn Git for the first time |<<git-basics,Git basics>>, then <<practice,complete practice>>
+|Contribute without write access |<<fork-workflow,Fork workflow>>
+|Collaborate in a shared repository |<<team-workflow,Team workflow>>
+|Look up a command |link:gitprimer.md[Command reference]
+|Fix a problem |<<troubleshooting,Common problems>>
 |===
 
-== Recommended learning path
+This guide is for beginners and occasional contributors. Read the practice in
+order, then use the command reference as a reminder. Advanced history rewriting,
+deployment, and GitHub Actions programming are outside this tutorial's scope.
 
-. Read <<git-basics,Git basics>> to understand local commits and remote repositories.
-. Follow <<getting-started,Getting started>> to clone a repository, configure your identity, stage changes, commit, and push.
-. Read <<branches-merging,Branches and merging>> before starting collaborative work.
-. Follow <<github-workflow,GitHub workflow>> to take a change through an issue and pull request.
-. Keep link:gitprimer.md[the quick reference] handy while you practise.
-
+[[prerequisites]]
 == Before you begin
 
-* Install Git and use a terminal where the `git` command is available.
-* Have a GitHub account and access to a repository you can practise on.
-  Pushing to another person's repository requires write access; otherwise use your own fork.
-* The examples use a Unix-style terminal, such as Git Bash on Windows,
-  or a terminal on macOS or Linux. Prompts such as `~/covid-checkin/ (main) $`
-  and the command output are illustrative: type only the command after `$`.
-* Replace example names, email addresses, and repository URLs with your own.
-  A branch name in your repository may differ from `main`.
-
-TIP: Practise in a disposable repository. Check `git status` before committing,
-switching branches, or integrating remote changes. Review commands that discard
-work before using them.
-
-The full tutorial starts below. Screenshots and course-specific examples are
-retained from the original guide; the current GitHub interface may look different.
-
+* Install https://git-scm.com/downloads[Git] and confirm `git --version` works.
+  The `switch` and `restore` commands require Git 2.23 or later.
+* Use Git Bash on Windows, or a shell such as Bash on macOS or Linux.
+  Shell commands such as `printf` below are written for those environments,
+  rather than PowerShell or Command Prompt.
+* Create a GitHub account. For this exercise, create your own repository.
+* Copy commands only, not output. Text such as `YOUR-USERNAME` is a placeholder:
+  replace it before running the command.
+* Git commit names and email addresses become part of commit history. Configure
+  the identity you want to publish. A GitHub username alone does not authenticate Git.
 
 [[git-basics]]
-== Git Basics
+== Git basics
 
-Git is a _distributed_ version control system. So unlike SVN (subversion), there
-is no central repository containing all the code. Instead everyone who works on
-the repository has a complete copy of every change. When you commit changes
-those changes are committed to your local copy. In order for everyone to keep in
-sync we can assign a common repository where everyone will *_push_* their changes 
-to. We will be using GitHub for this purpose.
+Git records version history on your computer. GitHub hosts repositories and
+provides collaboration features such as issues and pull requests.
 
-You may be thinking, "what happens when 2 or more developers modify the same file?"
-Git is *_merge_* focussed, meaning that it is especially good at merging the
-changes that different developers have made to the same files, and can guide you
-to manually merge them if it can't work it out.
+* A *commit* records a snapshot, author information, a message, and parent links.
+  Comparing snapshots shows the differences between versions.
+* The *working tree* is your checked-out files.
+* The *staging area* (index) holds the content intended for the next commit.
+  Editing a file again after staging does not update its staged content.
+* A *branch* is a movable reference to a commit. Histories can merge, so the
+  history is a graph rather than a separate linear chain for every branch.
+* `HEAD` normally refers to the current branch. In detached HEAD mode, it refers
+  directly to a commit.
+* A *remote* is a named repository URL, such as `origin`.
+* A GitHub *Fork* is a separate repository under another owner. Creating a Git
+  branch does not create a GitHub Fork.
+* *Clone* copies a repository locally; *commit* records a local snapshot;
+  *push* sends commits to a remote; a *pull request* proposes integration on GitHub.
 
-[[getting-started]]
-== Getting Started with your repository
+A normal clone has repository history, but shallow or partial clones can omit
+history or objects. You can commit locally without an internet connection.
 
-=== Clone the repository
+[[authentication]]
+== Sign in for HTTPS pushes
 
-After you have set up your GitHub account, you can *_clone_* the repository to
-get your local copy.
+Public repositories can normally be cloned without signing in. Pushing requires
+authentication and permission to write to the destination.
 
-. Click the clone button and copy the https link to the repository (GitHub even
-  provides a handy button to do it)
-  
-image::images/00-Clone.png[]
+Use Git Credential Manager's browser sign-in when prompted. Alternatively,
+install https://cli.github.com/[GitHub CLI] and run:
 
-[start="2"]  
-. In the CS50 IDE terminal `cd` to the directory where you want to place the
-  repository, it can be anywhere (for example, your home directory)
-  
-. use `git` to clone the repository:
-[source,console]
+[source,bash]
 ----
-~/ $ git clone https://github.com/WDC-Team418-Im-a-Teapot/covid-checkin.git
-Cloning into 'covid-checkin'...
-remote: Enumerating objects: 4, done.
-remote: Counting objects: 100% (4/4), done.
-remote: Compressing objects: 100% (3/3), done.
-remote: Total 4 (delta 0), reused 0 (delta 0), pack-reused 0
-Unpacking objects: 100% (4/4), 1.39 KiB | 1.39 MiB/s, done.
+gh auth login
 ----
 
-=== Setting up your user
+Select GitHub.com, HTTPS, and browser authentication. If asked whether to
+authenticate Git with your GitHub credentials, answer yes. GitHub account
+passwords are not accepted as passwords for Git HTTPS operations. Do not put
+tokens in clone URLs, commands saved in documentation, or committed files.
 
-You should now have the local copy of the git repository, but you need to make
-a few configurations in order to commit to it.
+See https://docs.github.com/en/get-started/git-basics/caching-your-github-credentials-in-git[GitHub's credential setup guide].
+For a private repository, authenticate before cloning.
 
-. `cd` into the repository. You should see your prompt change indicating you are
-  on the _main branch_ (branches will be explained later)
-  
-. Set your username and email
-[source, console]
+[[practice]]
+== Complete practice: one file, one branch, one pull request
+
+This example consistently uses the repository `git-practice`, branch
+`docs/first-note`, and file `practice-note.txt`. Use a disposable repository,
+not a production project.
+
+=== 1. Create and clone your practice repository
+
+On GitHub, create a repository named `git-practice` in your account and select
+the option to add a README. This gives the repository an initial commit.
+The example assumes the default branch is `main`; substitute your actual
+default branch if different.
+
+[source,bash]
 ----
-~/ $ cd covid-checkin
-~/covid-checkin/ (main) $ git config user.name "Your Name"
-~/covid-checkin/ (main) $ git config user.email your.name@student.adelaide.edu.au
+git clone https://github.com/YOUR-USERNAME/git-practice.git
+cd git-practice
+git status
+git remote -v
 ----
 
-After that you are all ready to add files and commit changes
+`origin` should point to your own repository. If you cloned someone else's
+repository and cannot push, use the <<fork-workflow,Fork workflow>> instead.
 
-=== Adding files
+=== 2. Set your commit identity
 
-You need to tell git to track changes to files and directories, simply copying
-or creating them in the directory will not get git to track them. Use `git add`
-command to tell git to track files or directories. If you tell it to track
-a directory, it stages eligible files and changes under it, respecting ignore
+[source,bash]
+----
+git config user.name "YOUR-PUBLIC-NAME"
+git config user.email "YOUR-GITHUB-COMMIT-EMAIL"
+----
+
+These settings apply to this repository only. Replace both values before
+committing. For email privacy, copy your exact GitHub-provided no-reply address
+from your https://github.com/settings/emails[GitHub email settings].
+Do not assume everyone has the same no-reply address format.
+
+=== 3. Create a branch before changing files
+
+[source,bash]
+----
+git switch main
+git pull --ff-only origin main
+git switch -c docs/first-note
+----
+
+`--ff-only` updates only when a fast-forward is possible. If it refuses,
+inspect your branch history instead of forcing an update.
+
+The branch now points to the same commit as `main`. Creating a branch makes a
+separate line of work possible; reviews and checks help keep the main branch
+stable.
+
+=== 4. Create and review one file
+
+[source,bash]
+----
+printf 'My first Git practice note.\n' > practice-note.txt
+git status --short
+----
+
+Before staging, the new file should appear as `?? practice-note.txt`.
+`git diff` does not display the contents of an untracked file. Open it in
+your editor, then stage exactly that file:
+
+[source,bash]
+----
+git add practice-note.txt
+git diff --cached -- practice-note.txt
+git status --short
+----
+
+The status should now show `A  practice-note.txt`. Review the staged diff
+before committing. `git add` stages eligible changes and respects ignore
 rules for untracked files. Git does not track empty directories.
 
-[source,console]
+A `.gitignore` entry such as `node_modules/` prevents ordinary additions of
+matching untracked files. It does not stop tracking files already committed.
+
+=== 5. Commit and push the same branch
+
+[source,bash]
 ----
-~/covid-checkin/src/ (feature/express-generator) $ git add routes/
-~/covid-checkin/src/ (feature/express-generator) $ git add app.js
-----
-
-TIP: A `.gitignore` file can prevent matching untracked files from being added
-by ordinary `git add` commands. For example, `node_modules/` ignores that
-directory. It does not stop tracking files already committed.
-
-Git also has the concept of the 'staging area'. This is a collection of changes
-to files that will be included in the next commit. You use the `git add` command
-to also _stage_ the current changes to a file. You can bypass this step when
-committing.
-
-
-
-=== Checking the current status of the working area
-
-When you are ready to commit changes, or you want to see what the current status
-of the repository is, you can use `git status`.
-
-[source,console]
-----
-~/covid-checkin/src/ (feature/express-generator) $ git status
-On branch feature/express-generator
-Your branch is up to date with 'origin/feature/express-generator'.
-
-Changes to be committed:
-  (use "git restore --staged <file>..." to unstage)
-        new file:   app.js
-        new file:   bin/www
-        new file:   package.json
-        new file:   public/index.html
-        new file:   public/stylesheets/style.css
-        new file:   routes/index.js
-        new file:   routes/users.js
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-        package-lock.json
+git commit -m "docs: add first practice note"
+git log -1 --oneline
+git push -u origin docs/first-note
 ----
 
+The commit records only the staged file. The push creates or updates
+`origin/docs/first-note` and sets it as the branch's upstream.
+Later pushes from this branch can use `git push`.
 
-=== Committing Changes
+`git commit -a` automatically stages modifications and deletions of tracked
+files, alongside existing staged changes. It does not add untracked files.
 
-Finally you are ready to commit changes. To commit everything in the _staging area_
-use
-[source, console]
+=== 6. Open and review a pull request
+
+On your GitHub repository, use *Compare & pull request*, or open *Pull requests*
+and choose *New pull request*.
+
+* Base repository: your `git-practice` repository.
+* Base branch: `main`.
+* Compare branch: `docs/first-note`.
+
+Describe the change, review *Files changed*, and create the pull request.
+A commit or push does not automatically submit a pull request.
+Ask a collaborator to review it when working with a team. For this disposable
+exercise, inspect and merge your own pull request if repository rules allow it.
+
+GitHub may offer merge, squash, or rebase options depending on repository
+settings. In the simple exercise, use the available permitted method and
+check that `practice-note.txt` appears on `main`.
+
+=== 7. Update locally and clean up
+
+After the pull request has been merged on GitHub:
+
+[source,bash]
 ----
-$ git commit -m "Your commit message here"
-[feature/express-generator d934ede] Your commit message here
- 7 files changed, 562 insertions(+)
- create mode 100644 src/app.js
- create mode 100755 src/bin/www
- create mode 100644 src/package.json
- create mode 100644 src/public/index.html
- create mode 100644 src/public/stylesheets/style.css
- create mode 100644 src/routes/index.js
- create mode 100644 src/routes/users.js
-----
-
-To automatically stage modifications and deletions of tracked files, use the `-a` flag
-[source, console]
-----
-$ git commit -a -m "Your commit message here"
-----
-
-This commits staged changes plus modifications and deletions of tracked files.
-It does not include untracked new files; add those with `git add` first.
-
-=== Sharing your changes
-
-So far the changes you've made have only been to your copy of the repository, in
-order to share those changes with everyone else you need to *_push_* them to
-GitHub:
-
-[source,console]
-----
-$ git push
-Enumerating objects: 16, done.
-Counting objects: 100% (16/16), done.
-Delta compression using up to 16 threads
-Compressing objects: 100% (13/13), done.
-Writing objects: 100% (15/15), 6.68 KiB | 6.68 MiB/s, done.
-Total 15 (delta 1), reused 0 (delta 0)
-remote: Resolving deltas: 100% (1/1), done.
-To https://github.com/WDC-Team418-Im-a-Teapot/covid-checkin.git
-   7be3f1b..d934ede  main -> main
+git switch main
+git pull --ff-only origin main
+git fetch --prune origin
+git branch -d docs/first-note
 ----
 
-To update your local copy with all the changes that people have pushed to GitHub,
-you'll need to *_pull_* those changes:
+You may also use GitHub's *Delete branch* button to remove the remote feature
+branch. Pruning removes stale remote-tracking references, not ordinary local
+branches.
 
-[source,console]
+If `git branch -d` refuses after a squash or rebase merge, verify that the
+intended changes are present on `main`. You can leave the local branch in place.
+Do not force-delete it without checking for work you still need.
+
+[[fork-workflow]]
+== Fork workflow: contribute without write access
+
+. On the source repository, choose *Fork* and create the copy in your account.
+. Clone your Fork. `origin` should point to your account.
+. Configure your identity as above and create a feature branch.
+. Make, review, stage, commit, and push changes to your Fork.
+. Open a pull request with the *original repository* as base and your Fork's
+  feature branch as head. Its maintainers decide whether to merge it.
+
+To keep track of the original repository, add a second remote. Replace the
+example URL with the original project's actual URL:
+
+[source,bash]
 ----
-$ git pull
+git remote add upstream https://github.com/UPSTREAM-OWNER/PROJECT.git
+git remote -v
+git fetch upstream
 ----
 
-A successful `git pull` fetches remote changes and integrates them into your
-current branch, updating the working files. Integration may use a merge or
-rebase depending on your options and configuration. If histories have diverged,
-Git may ask you to choose a strategy. No extra `git checkout HEAD` is needed.
+To update an unchanged local default branch, assuming it is named `main`:
 
-WARNING: Commit or stash unfinished changes before pulling. Git generally
-refuses an integration that would overwrite local changes; it does not simply
-discard all uncommitted work. Conflicts may still need manual resolution.
+[source,bash]
+----
+git switch main
+git merge --ff-only upstream/main
+git push origin main
+----
 
+Commit or stash unfinished changes first. If your Fork's `main` has diverged
+from upstream, this fast-forward-only command stops; inspect the differences
+and choose a merge or rebase intentionally. Do not use force push as a default fix.
+Synchronizing your Fork does not modify the original repository.
+
+[[team-workflow]]
+== Team workflow: collaborate with write access
+
+Clone the shared repository, create your own feature branch, and push it to
+that shared repository. The pull request's base and head repositories are the
+same, unlike the Fork workflow. Branch protection may require reviews or checks
+before merging.
+
+An issue can describe a bug, feature, or task. Use *Labels* to categorize it,
+and assign it to yourself if repository permissions allow. You do not need
+an issue for every change unless the project's contribution rules require one.
+
+Use a descriptive branch such as `docs/first-note` or `fix/login-error`.
+After pushing, open a pull request, address review feedback with more commits,
+and merge only after the required checks and approvals.
 
 [[branches-merging]]
-== Branches & Merging
+== Branches and merging
 
-A repository commonly has a default branch such as `main` or `master`; the
-name is configurable. A newly initialized repository has no commits yet.
-A branch points to a commit. Commits store snapshots and links to their parent
-commits; the initial commit has no parent, and a merge commit can have multiple
-parents. `HEAD` normally refers to the currently checked-out branch. In detached
-HEAD mode, it points directly to a commit.
+A fast-forward moves the current branch reference to a descendant commit,
+without adding a merge commit. When both branches have their own commits,
+an ordinary successful merge creates a commit with multiple parents.
 
-  Initial ---> 1 --> 2 --> 3 --> HEAD
-  
-It is not a good idea to do your work on the `main` branch. Doing so would cause
-many problems when multiple people push their changes and generally discourages
-committing work, which are both bad. In order to combat this, we use branches
-and merging.
-
-A branch is a fork in the history that we take to make our changes. When we are
-done we can merge those changes into the `main` branch. Everyone works on
-different branches, so the `main` branch remains stable and no one is interfering
-with anyone else's work
-
-  Initial ---> 1 --> 2 ------------------------------------+ 3 --> HEAD
-                      \                                    /
-             (branch)  +--> 2.1 --> 2.2 --> ... -> 2.31 --+ (merge)
-             
-Merging integrates another branch into the current branch. If their histories
-have diverged, a successful ordinary merge creates a merge commit. If the
-current branch is an ancestor of the other branch, Git can fast-forward the
-branch pointer without creating a new commit.
-
-NOTE: Merging does not have to be exclusively with the `main` branch. Any commit
-can be the source of a branch (so you can have branches of branches).
-
-
-Things become slightly more complicated when more than one branch is involved.
-For example, consider this timeline:
-
-                     +--> 2.1 --> 2.2 --+
-                    /                    \
-Initial ---> 1 --> 2 ---------------------+ 3 ----------> + 4 --> HEAD
-                    \                                    /
-                     +--> 2.1 --> 2.2 --> ... -> 2.31 --+
-
-Here the top branch will merge without issue. However what about the bottom
-branch. There could be files modified in both branches. Git is very good at
-merging. If the modifications were to different parts of the file the merge
-will likely go ahead without issue. If the modifications were to the same
-part of the file, there will be a *_conflict_*. Git does not know how to merge
-the files automatically, so it stops and reports the conflicting files.
-Open those files, resolve the conflict markers, and save them. Stage each
-resolved file with `git add <file>`, then finish with `git merge --continue`
-(or `git commit`). Do not restart the merge. Alternatively, abort it:
-
-[source,console]
+[source,text]
 ----
-$ git merge --abort
+Before:
+A---B---C  main
+     \
+      D    docs/first-note
+
+After merging the feature branch into main:
+A---B---C---M  main
+     \     /
+      D---+   docs/first-note
 ----
 
-WARNING: Please do not commit changes to the `main` branch unless you are
-absolutely sure. It is best to work in a branch off of `main` and merge it back. 
+This example shows a merge commit. GitHub squash and rebase merges produce
+different histories.
 
-=== Whoops I'm on the wrong branch
+=== Resolve a merge conflict
 
-If you realise you are on the wrong branch. Perhaps you realise you are on the
-`main` branch, but you have already started to make changes to files. Do not
-worry, use `git stash push` and `git stash pop` to move unfinished work to a
-different branch. The `-u` option includes untracked files, but not ignored files.
-The example below creates a new branch; if it already exists, use
-`git switch my-new-branch` instead of `git switch -c my-new-branch`.
+Incompatible edits to the same text region may cause a conflict; not every
+overlapping change conflicts. Files can also conflict through deletion or
+renaming. Git reports conflicts; it does not always launch an editor.
 
-[source,console]
+For an ordinary text conflict, edit the file and remove the markers after
+deciding what the combined content should be:
+
+[source,text]
 ----
-$ git stash push -u -m "A message about the changes you are stashing"
-$ git switch -c my-new-branch
-$ git stash pop
-----
-
-NOTE: `git stash pop` can produce conflicts. If it does, resolve them before
-continuing; Git keeps the stash entry when applying it fails.
-
-
-[[github-workflow]]
-== Basic GitHub Workflow
-
-Collaborating on GitHub usually involves:
-
-. Opening an issue (optional)
-. Creating a new branch to work on the changes
-. Committing all changes to that branch
-. Pushing those changes to GitHub
-. Issuing *_pull requests_*
-. The request is then looked over by the team, and if no problems are found
-. Merging the changes into the main branch
-. Deleting the branch
-
-
-=== Issues
-
-Issues are the way the team knows what tasks need to be done. It can be a new
-feature, an enhancement on the way something works, a bug, etc. Any work that
-needs to be done to the project should be stated in an issue. An issue is said
-to be _'open'_ when it is created. When the team decides that nothing more needs
-to be done, it is marked as _'closed'_.
-
-Click on the Issues tab to see which issues are still open
-
-image::images/01-Issues.png[]
-
-
-==== Creating a new Issue
-
-Click the new issue button to create the new issue
-
-Fill in the Name, and description. Include as much detail as necessary to help
-the person tackling the issue know what has to be done. In particular for bugs,
-screenshots may be useful to help explain the problem.
-
-On the right side you will have the option of adding tags. These help sort the
-issues, to make it easier to find.
-
-image::images/02-NewIssue.png[]
-
-==== Tackling an Issue
-
-When you want to tackle an issue, assign yourself to the issue, using the
-'Assignee' menu on the right hand side of the issue. This will let your team
-know issues people are working on.
-
-image::images/03-AssignIssue.png[]
-
-
-Next create a new branch to make your changes. It is helpful to prefix the new
-branch with the type to change the branch is going to involve, e.g. `feature/`,
-`bugfix/`
-
-image::images/04-CreateBranch.png[]
-
-
-In the terminal, fetch remote references so Git knows about the new branch:
-
-[source,console]
-----
-~/covid-checkin/ (main) $ git fetch origin
-From https://github.com/WDC-Team418-Im-a-Teapot/covid-checkin
- * [new branch]      feature/express-generator -> origin/feature/express-generator
+<<<<<<< HEAD
+My current branch's text
+=======
+The incoming branch's text
+>>>>>>> other-branch
 ----
 
-then use the `checkout` command to shift to the new branch, you will notice that
-the terminal prompt will change to show that you are on a different branch
+Then stage each resolved file and complete the merge:
 
-[source,console]
+[source,bash]
 ----
-~/covid-checkin/ (main) $ git checkout feature/express-generator
-Branch 'feature/express-generator' set up to track remote branch 'feature/express-generator' from 'origin'.
-Switched to a new branch 'feature/express-generator'
-~/covid-checkin/ (feature/express-generator) $
+git add practice-note.txt
+git merge --continue
 ----
 
-Now make all your changes, commit them, and push the changes back to GitHub.
+Use `git status` to see what remains unresolved. To abandon the merge,
+use `git merge --abort`. Start merges with a clean working tree, since aborting
+may not recover unrelated uncommitted changes perfectly.
 
-==== Issuing a Pull Request and Merging your work
+A rebase is different: after resolving and staging a file, use
+`git rebase --continue`, or `git rebase --abort` to abandon it.
+During a rebase, do not assume the meaning of "ours" and "theirs" matches an
+ordinary merge.
 
-When you think your work is ready to be merged into the main branch, issue a
-*_Pull Request_* under the Pull Request Tab.
+=== Move unfinished work to a new branch
 
-image::images/05-PullRequests.png[]
+If you started editing on the wrong branch, first inspect `git status`.
+For a new branch starting at the current commit, your edits can usually stay
+in place while you run `git switch -c new-branch`.
 
-This will let you write about the changes you've made to resolve the issue,
-and will show a diff of the files you've changed. It will also tell you if your
-work can be automatically merged.
+To set work aside before switching to a different existing branch:
 
-image::images/06-Comparing.png[]
+[source,bash]
+----
+git stash push -u -m "unfinished practice note"
+git switch existing-branch
+git stash pop
+----
 
-Another team member should then review your work, to make sure it is all ok. If
-it is, then they can merge the request. If they think that other changes have to
-be made, they can add more comments to the pull request. You'll then have to
-make further changes and push them back to GitHub.
+Replace `existing-branch` with a branch that actually exists.
+`-u` includes untracked files, but not ignored files. Applying the stash can
+conflict; Git retains the stash entry if `pop` fails.
 
-image::images/07-PullRequest2.png[]
+[[troubleshooting]]
+== Common problems
 
-Once the branch has been merged, it has served its purpose and can be deleted.
+[cols="1,2",options="header"]
+|===
+|Symptom |What to check
+|Authentication failed
+|Use browser sign-in through a credential manager or GitHub CLI. A GitHub account password is not a Git HTTPS password.
+|Permission denied or HTTP 403 on push
+|Check `git remote -v`, the signed-in account, and repository permissions. Push to your Fork if you lack write access. Repository rules may restrict direct pushes.
+|Non-fast-forward rejection
+|Fetch and inspect `git log --oneline --graph --all`. Integrate the remote work with an intentional merge or rebase before retrying; do not blindly force push.
+|Current branch has no upstream
+|For this exercise, use `git push -u origin docs/first-note` from the feature branch.
+|Nothing to commit
+|Run `git status`. Check whether the file was saved and staged, or ignored.
+|Branch switch would overwrite changes
+|Commit or stash the work first. Do not discard it just to make the command succeed.
+|Pull with --ff-only refuses
+|Local and remote histories have diverged. Inspect the commits and choose how to integrate them.
+|Detached HEAD
+|You checked out a commit instead of a branch. Use `git switch -c keep-work` to retain any work before leaving that position.
+|===
 
-image::images/08-Merged.png[]
+[[screenshots]]
+== Historical GitHub interface examples
 
+These screenshots illustrate older GitHub screens. Their names, repositories,
+and course context are historical examples, not author identity or instructions
+to use those repositories. Follow the written practice above for commands and
+current repository names. GitHub's interface may differ.
 
-Branches don't need to be deleted, but it is often best in order to keep everything
-tidy.
+image::images/00-Clone.png[Historical repository clone URL menu]
+image::images/01-Issues.png[Historical GitHub issue list]
+image::images/02-NewIssue.png[Historical new issue form]
+image::images/03-AssignIssue.png[Historical issue assignee menu]
+image::images/04-CreateBranch.png[Historical branch creation interface]
+image::images/05-PullRequests.png[Historical pull request list]
+image::images/06-Comparing.png[Historical branch comparison screen]
+image::images/07-PullRequest2.png[Historical pull request review screen]
+image::images/08-Merged.png[Historical merged pull request and branch deletion controls]
 
-== Command references
+== Documentation checks
 
+GitHub Actions checks this guide and link:gitprimer.md[the command reference]
+on pushes and pull requests. It verifies local links, explicit section anchors,
+image paths and alternative text, basic source formatting, and public HTTP links.
+It also renders this AsciiDoc file to catch markup warnings.
+Authentication-only pages are listed explicitly as exclusions in
+link:scripts/check_docs.py[the checker]; rate limits and temporary server failures
+are reported as warnings rather than broken links.
+
+Run the local checks without external network requests:
+
+[source,bash]
+----
+python scripts/check_docs.py
+----
+
+Add `--external` to check public HTTP links as well.
+
+== References
+
+* https://git-scm.com/book/en/v2[Pro Git]
 * https://git-scm.com/docs/git-pull[git pull]
+* https://git-scm.com/docs/git-fetch[git fetch]
 * https://git-scm.com/docs/git-commit[git commit]
+* https://git-scm.com/docs/git-switch[git switch]
+* https://git-scm.com/docs/git-restore[git restore]
 * https://git-scm.com/docs/git-merge[git merge]
 * https://git-scm.com/docs/git-stash[git stash]
+
