@@ -3,9 +3,69 @@ Karl Asenstorfer
 v1.0
 :toc: auto
 
-If you are not up to speed with Git and GitHub, this document will introduce
-some of the basics and guide you through the common GitHub workflow
+Learn the Git basics and follow a practical GitHub collaboration workflow:
+clone a repository, make changes on a branch, commit, push, and open a pull request.
 
+== Who this guide is for
+
+* New Git and GitHub users who want to understand the commands they run.
+* Contributors preparing to make their first pull request.
+* Readers who already know the basics and need a command reference.
+
+This is an introductory guide. Advanced history rewriting, deployment, and
+GitHub Actions are outside its current scope.
+
+== Choose your starting point
+
+[cols="1,2,2",options="header"]
+|===
+|Your goal |Start here |What you will find
+
+|Learn Git for the first time
+|<<git-basics,Full tutorial: Git basics>>
+|The core concepts, followed by setup, staging, commits, and remote updates.
+
+|Make a change and collaborate
+|<<github-workflow,GitHub workflow>>
+|Issues, branches, pull requests, review, and merging. Read the setup section first if Git is new to you.
+
+|Look up a command
+|link:gitprimer.md[Quick primer and command reference]
+|Compact explanations and command tables for everyday Git operations.
+
+|Understand branches or fix a conflict
+|<<branches-merging,Branches and merging>>
+|How branch histories fit together and how to finish or abort a conflicted merge.
+|===
+
+== Recommended learning path
+
+. Read <<git-basics,Git basics>> to understand local commits and remote repositories.
+. Follow <<getting-started,Getting started>> to clone a repository, configure your identity, stage changes, commit, and push.
+. Read <<branches-merging,Branches and merging>> before starting collaborative work.
+. Follow <<github-workflow,GitHub workflow>> to take a change through an issue and pull request.
+. Keep link:gitprimer.md[the quick reference] handy while you practise.
+
+== Before you begin
+
+* Install Git and use a terminal where the `git` command is available.
+* Have a GitHub account and access to a repository you can practise on.
+  Pushing to another person's repository requires write access; otherwise use your own fork.
+* The examples use a Unix-style terminal, such as Git Bash on Windows,
+  or a terminal on macOS or Linux. Prompts such as `~/covid-checkin/ (main) $`
+  and the command output are illustrative: type only the command after `$`.
+* Replace example names, email addresses, and repository URLs with your own.
+  A branch name in your repository may differ from `main`.
+
+TIP: Practise in a disposable repository. Check `git status` before committing,
+switching branches, or integrating remote changes. Review commands that discard
+work before using them.
+
+The full tutorial starts below. Screenshots and course-specific examples are
+retained from the original guide; the current GitHub interface may look different.
+
+
+[[git-basics]]
 == Git Basics
 
 Git is a _distributed_ version control system. So unlike SVN (subversion), there
@@ -20,6 +80,7 @@ Git is *_merge_* focussed, meaning that it is especially good at merging the
 changes that different developers have made to the same files, and can guide you
 to manually merge them if it can't work it out.
 
+[[getting-started]]
 == Getting Started with your repository
 
 === Clone the repository
@@ -183,6 +244,7 @@ refuses an integration that would overwrite local changes; it does not simply
 discard all uncommitted work. Conflicts may still need manual resolution.
 
 
+[[branches-merging]]
 == Branches & Merging
 
 A repository commonly has a default branch such as `main` or `master`; the
@@ -264,6 +326,7 @@ NOTE: `git stash pop` can produce conflicts. If it does, resolve them before
 continuing; Git keeps the stash entry when applying it fails.
 
 
+[[github-workflow]]
 == Basic GitHub Workflow
 
 Collaborating on GitHub usually involves:
