@@ -3,6 +3,29 @@
 Learn Git through one small change: create a branch, edit one file, commit,
 push, and open a pull request.
 
+## Contents
+
+- [Choose your starting point](#choose-your-starting-point)
+- [Before you begin](#prerequisites)
+- [Git basics](#git-basics)
+- [Sign in for HTTPS pushes](#authentication)
+- [Complete practice](#practice)
+  - [1. Create and clone your practice repository](#1-create-and-clone-your-practice-repository)
+  - [2. Set your commit identity](#2-set-your-commit-identity)
+  - [3. Create a branch before changing files](#3-create-a-branch-before-changing-files)
+  - [4. Create and review one file](#4-create-and-review-one-file)
+  - [5. Commit and push the same branch](#5-commit-and-push-the-same-branch)
+  - [6. Open and review a pull request](#6-open-and-review-a-pull-request)
+  - [7. Update locally and clean up](#7-update-locally-and-clean-up)
+- [Fork workflow](#fork-workflow)
+- [Team workflow](#team-workflow)
+- [Branches and merging](#branches-merging)
+  - [Resolve a merge conflict](#resolve-a-merge-conflict)
+  - [Move unfinished work to a new branch](#move-unfinished-work-to-a-new-branch)
+- [Common problems](#troubleshooting)
+- [Documentation checks](#documentation-checks)
+- [References](#references)
+
 ## Choose your starting point
 
 | Your goal | Start here |
@@ -31,8 +54,6 @@ deployment, and GitHub Actions programming are outside this tutorial's scope.
   replace it before running the command.
 * Git commit names and email addresses become part of commit history. Configure
   the identity you want to publish. A GitHub username alone does not authenticate Git.
-
-<a name="git-basics"></a>
 
 ## Git basics
 
@@ -216,7 +237,7 @@ Do not force-delete it without checking for work you still need.
 1. Configure your identity as above and create a feature branch.
 1. Make, review, stage, commit, and push changes to your Fork.
 1. Open a pull request with the *original repository* as base and your Fork's
-  feature branch as head. Its maintainers decide whether to merge it.
+   feature branch as head. Its maintainers decide whether to merge it.
 
 To keep track of the original repository, add a second remote. Replace the
 example URL with the original project's actual URL:
@@ -274,9 +295,12 @@ A---B---C  main
 After merging the feature branch into main:
 A---B---C---M  main
      \     /
-      D---+   docs/first-note
+      D---+
+      ^
+      docs/first-note (still points to D)
 ```
 
+After the merge, `main` points to `M`; `docs/first-note` still points to `D`.
 This example shows a merge commit. GitHub squash and rebase merges produce
 different histories.
 
@@ -348,17 +372,26 @@ conflict; Git retains the stash entry if `pop` fails.
 
 ## Documentation checks
 
-GitHub Actions checks this guide and [the command reference](gitprimer.md)
-on pushes and pull requests. It verifies local links, section anchors,
-image paths and alternative text, basic Markdown formatting, and public HTTP links.
-Authentication-only pages are listed explicitly as exclusions in
-[the checker](scripts/check_docs.py); rate limits and temporary server failures
-are reported as warnings rather than broken links.
+GitHub Actions discovers all tracked Markdown files on pushes and pull requests.
+It checks local links and section anchors, image paths and alternative text,
+table column counts, fenced code blocks, and source formatting. It also renders
+each document to HTML with a Markdown parser and checks the rendered links and
+headings. This validates document structure; it is not a browser screenshot or
+a guarantee of identical styling on GitHub.
 
-Run the local checks without external network requests:
+The rendered HTML files are available in the run's **rendered-docs** artifact
+for visual inspection. Authentication-only links are explicitly excluded in
+[the checker](scripts/check_docs.py). HTTP failures such as rate limits and
+temporary server errors are reported as **unverified**, separately from broken
+links, in the Actions summary.
+
+To run the same checks locally, install Python 3.12 or later and the pinned
+documentation dependencies:
 
 ```bash
-python scripts/check_docs.py
+python -m pip install -r requirements-docs.txt
+python -m unittest discover -s tests
+python scripts/check_docs.py --render-dir work/rendered-docs
 ```
 
 Add `--external` to check public HTTP links as well.

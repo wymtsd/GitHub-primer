@@ -74,13 +74,17 @@ the deletion check after a squash/rebase merge; inspect before forcing deletion.
 | First push, setting the feature branch's upstream | `git push -u origin docs/first-note` |
 | Push the current branch once its upstream is configured | `git push` |
 | Fetch main and integrate it into the current branch only if fast-forward is possible | `git pull --ff-only origin main` |
-| Integrate a fetched feature branch into the current branch | `git merge docs/first-note` |
+| Integrate a local feature branch into the current branch | `git merge docs/first-note` |
+| Fetch and integrate a remote-tracking feature branch into the current branch | Run `git fetch origin`, then `git merge origin/docs/first-note` |
 | Delete a remote feature branch after checking it is no longer needed | `git push origin --delete docs/first-note` |
 
 Fetch does not update ordinary local branches. Prune does not delete them.
 Pull updates the **current branch**, so switch to main first if that is the
 branch you intend to update. A plain pull may merge or rebase depending on
 configuration and options; no extra checkout of HEAD is needed.
+
+A local branch such as `docs/first-note` is separate from the remote-tracking
+reference `origin/docs/first-note`. Fetch updates the latter, not the former.
 
 Before merging a feature branch, switch to the intended base and check
 `git status`. A merge may fast-forward or create a merge commit.

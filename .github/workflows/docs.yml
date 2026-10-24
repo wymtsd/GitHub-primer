@@ -4,15 +4,17 @@ on:
   push:
     branches: [main]
     paths:
-      - README.md
-      - gitprimer.md
-      - scripts/check_docs.py
+      - '**/*.md'
+      - scripts/**
+      - tests/**
+      - requirements-docs.txt
       - .github/workflows/docs.yml
   pull_request:
     paths:
-      - README.md
-      - gitprimer.md
-      - scripts/check_docs.py
+      - '**/*.md'
+      - scripts/**
+      - tests/**
+      - requirements-docs.txt
       - .github/workflows/docs.yml
   workflow_dispatch:
 
@@ -30,5 +32,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Check source formatting, images, links and anchors
-        run: python scripts/check_docs.py --external
+      - name: Install pinned documentation dependencies
+        run: python -m pip install -r requirements-docs.txt
+      - name: Verify checker behavior
+        run: python -m unittest discover -s tests
+      - name: Render Markdown and check tables, links and source formatting
+        run: python scripts/check_docs.py --external --render-dir work/rendered-docs
+      - name: Save rendered pages for visual inspection
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-docs
+          path: work/rendered-docs/**/*.html
+          if-no-files-found: warn
+          retention-days: 7
