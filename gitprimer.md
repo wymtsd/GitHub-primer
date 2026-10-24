@@ -1,6 +1,5 @@
 # Git command reference
 
-Author: [wymtsd](https://github.com/wymtsd).
 Start with the [full tutorial](Readme.adoc) for setup and a complete exercise.
 
 Examples use Git 2.23 or later. Replace placeholders before running commands.
