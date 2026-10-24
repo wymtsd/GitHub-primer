@@ -6,14 +6,12 @@ on:
     paths:
       - Readme.adoc
       - gitprimer.md
-      - images/**
       - scripts/check_docs.py
       - .github/workflows/docs.yml
   pull_request:
     paths:
       - Readme.adoc
       - gitprimer.md
-      - images/**
       - scripts/check_docs.py
       - .github/workflows/docs.yml
   workflow_dispatch:
