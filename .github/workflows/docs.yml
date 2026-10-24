@@ -1,0 +1,44 @@
+name: Documentation checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - Readme.adoc
+      - gitprimer.md
+      - images/**
+      - scripts/check_docs.py
+      - .github/workflows/docs.yml
+  pull_request:
+    paths:
+      - Readme.adoc
+      - gitprimer.md
+      - images/**
+      - scripts/check_docs.py
+      - .github/workflows/docs.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check source formatting, images, links and anchors
+        run: python scripts/check_docs.py --external
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+      - name: Install AsciiDoc renderer
+        run: gem install asciidoctor --no-document
+      - name: Render complete tutorial and fail on markup warnings
+        run: asciidoctor --failure-level WARN -o "$RUNNER_TEMP/primer.html" Readme.adoc
+
